@@ -4,6 +4,21 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <Authors>Cremis018</Authors>
+        <Description>一个简单的给Godot游戏开发中对基础类进行操作的常用工具和扩展</Description>
+        <Company>DeadDog</Company>
     </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <OutputPath>C:\MyNuget\Debug</OutputPath>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <OutputPath>C:\MyNuget\Release</OutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="GodotSharp" Version="4.5.1" />
+    </ItemGroup>
 
 </Project>
