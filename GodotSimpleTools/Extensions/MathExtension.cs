@@ -2,6 +2,25 @@
 
 public static class MathExtension
 {
+    #region 判断
+    /// <summary>
+    /// 近似为
+    /// </summary>
+    /// <param name="origin">原数值</param>
+    /// <param name="value">比较值</param>
+    /// <param name="tolerance">近似程度</param>
+    public static bool IsEqualsApprox(this float origin, float value, float tolerance = 1e-5f) 
+        => Math.Abs(origin - value) < tolerance;
+    
+    /// <summary>
+    /// 近似为
+    /// </summary>
+    /// <param name="origin">原数值</param>
+    /// <param name="value">比较值</param>
+    /// <param name="tolerance">近似程度</param>
+    public static bool IsEqualsApprox(this double origin, double value, double tolerance = 1e-5) 
+        => Math.Abs(origin - value) < tolerance;
+    #endregion
     #region 循环计算
     /// <summary>
     /// 获取循环计算结果。当增量超过循环限制时会从头开始返回计算结果
@@ -124,5 +143,126 @@ public static class MathExtension
         add = add % loop;
         return (origin + add + loop) % loop + loopStart;
     }
+    #endregion
+    #region 数值转换
+    /// <summary>
+    /// 弧度转角度
+    /// </summary>
+    /// <param name="rad">弧度值</param>
+    /// <returns>角度值</returns>
+    public static float RadToDeg(this float rad) => rad * 180 / MathF.PI;
+    
+    /// <summary>
+    /// 角度转弧度
+    /// </summary>
+    /// <param name="deg">角度值</param>
+    /// <returns>弧度值</returns>
+    public static float DegToRad(this float deg) => deg * MathF.PI / 180;
+
+    /// <summary>
+    /// 毫秒数转时间字符串
+    /// </summary>
+    /// <param name="ms">毫秒数</param>
+    /// <returns>时间字符串</returns>
+    public static string MsToTime(this int ms)
+    {
+        var timeSpan = TimeSpan.FromMilliseconds(ms);
+        return $"{timeSpan.Hours:D2}:{timeSpan.Minutes:D2}:{timeSpan.Seconds:D2}";
+    }
+
+    /// <summary>
+    /// 快速获取随机整数，范围为0-2147483647
+    /// </summary>
+    /// <returns>随机值</returns>
+    public static int RandomInt()
+    {
+        var rnd = new Random();
+        return rnd.Next();
+    }
+    
+    /// <summary>
+    /// 快速获取随机数
+    /// </summary>
+    /// <param name="min">最小值</param>
+    /// <param name="max">最大值</param>
+    /// <returns>随机值</returns>
+    public static int Random(int min, int max)
+    {
+        var rnd = new Random();
+        return rnd.Next(min, max);
+    }
+    
+    /// <summary>
+    /// 快速获取随机长整数，范围为0-9223372036854775807
+    /// </summary>
+    /// <returns>随机值</returns>
+    public static long RandomLong()
+    {
+        var rnd = new Random();
+        return rnd.NextInt64();
+    }
+    
+    /// <summary>
+    /// 快速获取随机数
+    /// </summary>
+    /// <param name="min">最小值</param>
+    /// <param name="max">最大值</param>
+    /// <returns>随机值</returns>
+    public static long Random(long min, long max)
+    {
+        var rnd = new Random();
+        return rnd.NextInt64(min, max);
+    }
+    
+    /// <summary>
+    /// 快速获取随机单精度实数，范围为0-1
+    /// </summary>
+    /// <returns>随机值</returns>
+    public static float RandomFloat()
+    {
+        var rnd = new Random();
+        return rnd.NextSingle();
+    }
+
+    /// <summary>
+    /// 快速获取随机数
+    /// </summary>
+    /// <param name="min">最小值</param>
+    /// <param name="max">最大值</param>
+    /// <returns>随机值</returns>
+    public static float Random(float min, float max)
+    {
+        var rnd = new Random();
+        return rnd.NextSingle() * (max - min) + min;
+    }
+    
+    /// <summary>
+    /// 快速获取随机双精度实数，范围为0-1
+    /// </summary>
+    /// <returns>随机值</returns>
+    public static double RandomDouble()
+    {
+        var rnd = new Random();
+        return rnd.NextDouble();
+    }
+    
+    /// <summary>
+    /// 快速获取随机数
+    /// </summary>
+    /// <param name="min">最小值</param>
+    /// <param name="max">最大值</param>
+    /// <returns>随机值</returns>
+    public static double Random(double min, double max)
+    {
+        var rnd = new Random();
+        return rnd.NextDouble() * (max - min) + min;
+    }
+
+    /// <summary>
+    /// 限制在0-1之间
+    /// </summary>
+    /// <param name="value">处理值</param>
+    /// <returns>限制值</returns>
+    public static float Clamp01(this float value) => Math.Clamp(value, 0, 1);
     #endregion
 }

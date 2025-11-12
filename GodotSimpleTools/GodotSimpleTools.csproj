@@ -7,6 +7,7 @@
         <Authors>Cremis018</Authors>
         <Description>一个简单的给Godot游戏开发中对基础类进行操作的常用工具和扩展</Description>
         <Company>DeadDog</Company>
+        <RepositoryUrl>https://github.com/Cremis018/GodotSimpleTools.git</RepositoryUrl>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
