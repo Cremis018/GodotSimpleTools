@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <Authors>Cremis018</Authors>
         <Description>一个简单的给Godot游戏开发中对基础类进行操作的常用工具和扩展</Description>
-        <Company>DeadDog</Company>
+        <Company>Minktail</Company>
         <RepositoryUrl>https://github.com/Cremis018/GodotSimpleTools.git</RepositoryUrl>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Version>0.0.0</Version>
