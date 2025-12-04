@@ -1,4 +1,6 @@
-﻿using GodotSimpleTools.Attributes;
+using Godot.NativeInterop;
+using GodotSimpleTools;
+using GodotSimpleTools.Attributes;
 
 namespace GodotSimpleToolsTest;
 
@@ -7,32 +9,39 @@ public partial class ReceiverSample
 {
     private readonly NotifySample _notifySample1 = new();
     private readonly NotifySample _notifySample2 = new();
+    [Notify] public int MyValue { get => GetMyValue(); set => SetMyValue(value); }
     
-     public ReceiverSample()
-     {
-         InitNotifies();
-     }
+    //用户在自动生成后可以补充的
+     // public ReceiverSample()
+     // {
+     //     InitNotifies();
+     // }
+     //
+     // public void Destroy()
+     // {
+     //     DestroyNotifies();
+     // }
     
-     public void Destroy()
-     {
-         DestroyNotifies();
-     }
-    
-    [Receiver(nameof(_notifySample1), NotifySample.Name_name, NotifyMethod.Changed)]
-    private void OnNotifySampleNameChanged(string value)
+    // [Receiver(nameof(_notifySample1.IsMenChanged))]
+    private void OnNotifySampleSexChanged(bool value)
     {
         
     }
 
-    [Receiver(nameof(_notifySample2), NotifySample.Name2_name, NotifyMethod.All)]
     private void OnNotifySampleName2(string value)
     {
         
     }
     
-    [Receiver(nameof(_notifySample1), NotifySample.Value1_name, NotifyMethod.Changed)]
-    [Receiver(nameof(_notifySample2), NotifySample.Value1_name, NotifyMethod.Changed)]
+    [Receiver(nameof(_notifySample2.Value1Changed))]
     private void ValueChanged(int value)
+    {
+        
+    }
+    
+    [Receiver(nameof(MyValueChanged))]
+    [Receiver(nameof(_notifySample1.Value1Changed))]
+    private void OnManyValueChanged(int value)
     {
         
     }
@@ -43,19 +52,19 @@ public partial class ReceiverSample
 // {
 //     public void InitNotifies()
 //     {
-//         _notifySample1.NameChanged += OnNotifySampleNameChanged;
 //         _notifySample2.Name2Changed += OnNotifySampleName2;
 //         _notifySample2.Name2Changing += OnNotifySampleName2;
 //         _notifySample1.Value1Changed += ValueChanged;
-//         _notifySample2.Value1Changed += ValueChanged;
+//         MyValueChanged += OnManyValueChanged;
+//         _notifySample2.Value1Changed += OnManyValueChanged;
 //     }
 //
 //     public void DestroyNotifies()
 //     {
-//         _notifySample1.NameChanged -= OnNotifySampleNameChanged;
 //         _notifySample2.Name2Changed -= OnNotifySampleName2;
 //         _notifySample2.Name2Changing -= OnNotifySampleName2;
 //         _notifySample1.Value1Changed -= ValueChanged;
-//         _notifySample2.Value1Changed -= ValueChanged;
+//         MyValueChanged -= OnManyValueChanged;
+//         _notifySample2.Value1Changed -= OnManyValueChanged;
 //     }
 // }

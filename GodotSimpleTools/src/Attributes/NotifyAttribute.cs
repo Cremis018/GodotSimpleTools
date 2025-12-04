@@ -1,4 +1,4 @@
-﻿namespace GodotSimpleTools.Attributes;
+﻿namespace GodotSimpleTools;
 
 [AttributeUsage(AttributeTargets.Property)]
 public class NotifyAttribute : Attribute

@@ -1,9 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -15,19 +14,13 @@ public sealed class ReceiverGenerator : IIncrementalGenerator
 {
     private const string ReceiverAttributeName = "GodotSimpleTools.Attributes.ReceiverAttribute";
 
-    // 与 GodotSimpleTools.Attributes.NotifyMethod 枚举值保持一致
-    private const int NotifyMethodChanged = 0;
-    private const int NotifyMethodChanging = 1;
-    private const int NotifyMethodAll = 2;
-
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var receiverMethods = context.SyntaxProvider
             .ForAttributeWithMetadataName(
                 ReceiverAttributeName,
                 static (node, _) => node is MethodDeclarationSyntax,
-                static (attributeContext, cancellationToken) =>
-                    GetReceiverMethodInfo(attributeContext, cancellationToken))
+                static (attributeContext, _) => GetMethodInfo(attributeContext))
             .Where(static info => info is not null)
             .Select(static (info, _) => info!);
 
@@ -46,76 +39,75 @@ public sealed class ReceiverGenerator : IIncrementalGenerator
             });
     }
 
-    private static ReceiverMethodInfo? GetReceiverMethodInfo(
-        GeneratorAttributeSyntaxContext context,
-        CancellationToken cancellationToken)
+private static ReceiverMethodInfo? GetMethodInfo(GeneratorAttributeSyntaxContext context)
+{
+    if (context.TargetNode is not MethodDeclarationSyntax methodDecl ||
+        context.TargetSymbol is not IMethodSymbol methodSymbol)
+        return null;
+
+    if (methodSymbol.ContainingType is not { } containingType || !IsPartial(containingType))
+        return null;
+
+    var semanticModel = context.SemanticModel;
+
+    // 找到方法上所有 ReceiverAttribute
+    var attributeSyntaxes = methodDecl.AttributeLists
+        .SelectMany(al => al.Attributes)
+        .Where(a =>
+        {
+            var symbol = semanticModel.GetSymbolInfo(a).Symbol;
+            return symbol is IMethodSymbol m && m.ContainingType?.ToDisplayString() == ReceiverAttributeName;
+        })
+        .ToArray();
+
+    if (attributeSyntaxes.Length == 0)
+        return null;
+
+    var receiverInfos = new List<ReceiverInfo>(attributeSyntaxes.Length);
+    foreach (var attr in attributeSyntaxes)
     {
-        if (context.TargetNode is not MethodDeclarationSyntax)
+        if (attr.ArgumentList == null || attr.ArgumentList.Arguments.Count < 1)
+            continue;
+
+        var firstArgSyntax = attr.ArgumentList.Arguments[0];
+        string eventNameLiteral = firstArgSyntax.Expression.ToString(); // 保留原始表达式
+        string eventName = ExtractEventName(eventNameLiteral);
+        if (!string.IsNullOrEmpty(eventName))
         {
-            return null;
+            receiverInfos.Add(new ReceiverInfo(eventName));
         }
-
-        if (context.TargetSymbol is not IMethodSymbol methodSymbol)
-        {
-            return null;
-        }
-
-        if (methodSymbol.ContainingType is not { } containingType)
-        {
-            return null;
-        }
-
-        if (!IsPartial(containingType, cancellationToken))
-        {
-            return null;
-        }
-
-        var receiverInfos = new List<ReceiverInfo>();
-
-        foreach (var attributeData in context.Attributes)
-        {
-            if (attributeData.AttributeClass?.ToDisplayString() != ReceiverAttributeName)
-            {
-                continue;
-            }
-
-            var notifyClassName = GetStringConstructorArgument(
-                attributeData,
-                0,
-                context.SemanticModel,
-                cancellationToken);
-
-            var notifyMemberName = GetStringConstructorArgument(
-                attributeData,
-                1,
-                context.SemanticModel,
-                cancellationToken);
-            var method = GetNotifyMethod(attributeData, 2);
-
-            if (string.IsNullOrWhiteSpace(notifyClassName) || string.IsNullOrWhiteSpace(notifyMemberName))
-            {
-                continue;
-            }
-
-            receiverInfos.Add(new ReceiverInfo(notifyClassName!, notifyMemberName!, method));
-        }
-
-        if (receiverInfos.Count == 0)
-        {
-            return null;
-        }
-
-        return new ReceiverMethodInfo(
-            containingType,
-            methodSymbol.Name,
-            receiverInfos.ToImmutableArray());
     }
 
-    private static bool IsPartial(INamedTypeSymbol typeSymbol, CancellationToken cancellationToken)
+    if (receiverInfos.Count == 0)
+        return null;
+
+    var parameters = methodSymbol.Parameters.Select(p => p.Type.ToDisplayString()).ToList();
+
+    return new ReceiverMethodInfo(containingType, methodSymbol.Name, parameters, receiverInfos);
+}
+
+// 将原始表达式解析为“事件名”的纯文本
+private static string ExtractEventName(string raw)
+{
+    if (raw.StartsWith("nameof(", StringComparison.Ordinal) && raw.EndsWith(")"))
+    {
+        return raw.Substring(7, raw.Length - 8); // 去掉 "nameof(" 和 ")"
+    }
+
+    if (raw.Length >= 2 && raw[0] == '"' && raw[raw.Length - 1] == '"')
+    {
+        return raw.Substring(1, raw.Length - 2); // 去掉首尾引号
+    }
+
+    // 其他表达式原样保留（可按需扩展或给出诊断）
+    return raw;
+}
+
+    private static bool IsPartial(INamedTypeSymbol typeSymbol)
     {
         foreach (var syntaxReference in typeSymbol.DeclaringSyntaxReferences)
         {
-            if (syntaxReference.GetSyntax(cancellationToken) is TypeDeclarationSyntax typeDeclaration &&
+            if (syntaxReference.GetSyntax() is TypeDeclarationSyntax typeDeclaration &&
                 typeDeclaration.Modifiers.Any(SyntaxKind.PartialKeyword))
             {
                 return true;
@@ -123,120 +115,6 @@ public sealed class ReceiverGenerator : IIncrementalGenerator
         }
 
         return false;
-    }
-
-    private static string? GetStringConstructorArgument(
-        AttributeData attributeData,
-        int index,
-        SemanticModel? semanticModel,
-        CancellationToken cancellationToken)
-    {
-        if (index < attributeData.ConstructorArguments.Length)
-        {
-            var argument = attributeData.ConstructorArguments[index];
-            if (argument.Value is string directValue)
-            {
-                return directValue;
-            }
-        }
-
-        if (semanticModel is not null &&
-            attributeData.ApplicationSyntaxReference?.GetSyntax(cancellationToken) is AttributeSyntax attributeSyntax &&
-            attributeSyntax.ArgumentList?.Arguments.Count > index)
-        {
-            var syntaxArgument = attributeSyntax.ArgumentList.Arguments[index];
-            var expression = syntaxArgument.Expression;
-
-            var constantValue = semanticModel.GetConstantValue(expression);
-            if (constantValue.HasValue && constantValue.Value is string constStringValue)
-            {
-                return constStringValue;
-            }
-
-            if (TryResolveNameof(expression) is { Length: > 0 } nameofValue)
-            {
-                return nameofValue;
-            }
-
-            if (expression is MemberAccessExpressionSyntax memberAccess)
-            {
-                return memberAccess.ToString();
-            }
-
-            if (expression is IdentifierNameSyntax identifierNameSyntax)
-            {
-                return identifierNameSyntax.Identifier.ValueText;
-            }
-
-            return expression.ToString();
-        }
-
-        if (index < attributeData.ConstructorArguments.Length)
-        {
-            var argument = attributeData.ConstructorArguments[index];
-            if (argument.Value is string fallbackString)
-            {
-                return fallbackString;
-            }
-
-            return argument.Value?.ToString();
-        }
-
-        return null;
-    }
-
-    private static int GetNotifyMethod(AttributeData attributeData, int index)
-    {
-        if (index >= attributeData.ConstructorArguments.Length)
-        {
-            return NotifyMethodChanged;
-        }
-
-        var argument = attributeData.ConstructorArguments[index];
-        var value = argument.Value;
-        if (value is int intValue)
-        {
-            return intValue;
-        }
-
-        if (value is Enum enumValue)
-        {
-            return Convert.ToInt32(enumValue);
-        }
-
-        if (value is IConvertible convertible)
-        {
-            try
-            {
-                return convertible.ToInt32(null);
-            }
-            catch
-            {
-                // ignore conversion failures and fall back to default
-            }
-        }
-
-        return NotifyMethodChanged;
-    }
-
-    private static string? TryResolveNameof(ExpressionSyntax expression)
-    {
-        if (expression is InvocationExpressionSyntax invocation &&
-            invocation.Expression is IdentifierNameSyntax identifierName &&
-            identifierName.Identifier.ValueText == "nameof" &&
-            invocation.ArgumentList.Arguments.Count > 0)
-        {
-            var nameofArgument = invocation.ArgumentList.Arguments[0].Expression;
-            return nameofArgument switch
-            {
-                IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
-                MemberAccessExpressionSyntax memberAccess when memberAccess.Name is IdentifierNameSyntax nameSyntax
-                    => nameSyntax.Identifier.ValueText,
-                _ => nameofArgument.ToString()
-            };
-        }
-
-        return null;
     }
 
     private static void GenerateSource(
@@ -288,6 +166,46 @@ public sealed class ReceiverGenerator : IIncrementalGenerator
         builder.AppendLine("}");
 
         return builder.ToString();
+    }
+
+    private static void WriteInitNotifies(StringBuilder builder, IReadOnlyList<ReceiverMethodInfo> methods)
+    {
+        builder.AppendLine("    public void InitNotifies()");
+        builder.AppendLine("    {");
+
+        foreach (var method in methods)
+        {
+            foreach (var receiver in method.Receivers)
+            {
+                builder.Append("        ")
+                    .Append(receiver.EventName)
+                    .Append(" += ")
+                    .Append(method.MethodName)
+                    .AppendLine(";");
+            }
+        }
+
+        builder.AppendLine("    }");
+    }
+
+    private static void WriteDestroyNotifies(StringBuilder builder, IReadOnlyList<ReceiverMethodInfo> methods)
+    {
+        builder.AppendLine("    public void DestroyNotifies()");
+        builder.AppendLine("    {");
+
+        foreach (var method in methods)
+        {
+            foreach (var receiver in method.Receivers)
+            {
+                builder.Append("        ")
+                    .Append(receiver.EventName)
+                    .Append(" -= ")
+                    .Append(method.MethodName)
+                    .AppendLine(";");
+            }
+        }
+
+        builder.AppendLine("    }");
     }
 
     private static string GetTypeDeclaration(INamedTypeSymbol classSymbol)
@@ -357,127 +275,33 @@ public sealed class ReceiverGenerator : IIncrementalGenerator
         return builder.ToString();
     }
 
-    private static void WriteInitNotifies(
-        StringBuilder builder,
-        IReadOnlyList<ReceiverMethodInfo> methods)
+    private sealed class ReceiverMethodInfo
     {
-        builder.AppendLine("    public void InitNotifies()");
-        builder.AppendLine("    {");
-
-        foreach (var method in methods)
+        public ReceiverMethodInfo(
+            INamedTypeSymbol containingType,
+            string methodName,
+            IReadOnlyList<string> parameters,
+            IReadOnlyList<ReceiverInfo> receivers)
         {
-            foreach (var receiverInfo in method.ReceiverInfos)
-            {
-                var propertyName = ExtractPropertyName(receiverInfo.NotifyMemberName);
-                if (propertyName is null)
-                {
-                    continue;
-                }
-
-                foreach (var eventName in GetEventNames(propertyName, receiverInfo.Method))
-                {
-                    builder.Append("        ")
-                        .Append(receiverInfo.NotifyClassName)
-                        .Append('.')
-                        .Append(eventName)
-                        .Append(" += ")
-                        .Append(method.MethodName)
-                        .AppendLine(";");
-                }
-            }
+            ContainingType = containingType;
+            MethodName = methodName;
+            Parameters = parameters;
+            Receivers = receivers;
         }
 
-        builder.AppendLine("    }");
+        public INamedTypeSymbol ContainingType { get; }
+        public string MethodName { get; }
+        public IReadOnlyList<string> Parameters { get; }
+        public IReadOnlyList<ReceiverInfo> Receivers { get; }
     }
 
-    private static void WriteDestroyNotifies(
-        StringBuilder builder,
-        IReadOnlyList<ReceiverMethodInfo> methods)
+    private sealed class ReceiverInfo
     {
-        builder.AppendLine("    public void DestroyNotifies()");
-        builder.AppendLine("    {");
-
-        foreach (var method in methods)
+        public ReceiverInfo(string eventName)
         {
-            foreach (var receiverInfo in method.ReceiverInfos)
-            {
-                var propertyName = ExtractPropertyName(receiverInfo.NotifyMemberName);
-                if (propertyName is null)
-                {
-                    continue;
-                }
-
-                foreach (var eventName in GetEventNames(propertyName, receiverInfo.Method))
-                {
-                    builder.Append("        ")
-                        .Append(receiverInfo.NotifyClassName)
-                        .Append('.')
-                        .Append(eventName)
-                        .Append(" -= ")
-                        .Append(method.MethodName)
-                        .AppendLine(";");
-                }
-            }
+            EventName = eventName;
         }
 
-        builder.AppendLine("    }");
-    }
-
-    private static string? ExtractPropertyName(string notifyMemberName)
-    {
-        if (string.IsNullOrWhiteSpace(notifyMemberName))
-        {
-            return null;
-        }
-
-        var lastDotIndex = notifyMemberName.LastIndexOf('.');
-        var namePart = lastDotIndex >= 0 && lastDotIndex < notifyMemberName.Length - 1
-            ? notifyMemberName.Substring(lastDotIndex + 1)
-            : notifyMemberName;
-
-        const string suffix = "_name";
-        if (namePart.EndsWith(suffix, StringComparison.Ordinal))
-        {
-            return namePart.Substring(0, namePart.Length - suffix.Length);
-        }
-
-        return namePart;
-    }
-
-    private static IEnumerable<string> GetEventNames(string propertyName, int method)
-    {
-        switch (method)
-        {
-            case NotifyMethodChanged:
-                yield return $"{propertyName}Changed";
-                break;
-            case NotifyMethodChanging:
-                yield return $"{propertyName}Changing";
-                break;
-            case NotifyMethodAll:
-                yield return $"{propertyName}Changed";
-                yield return $"{propertyName}Changing";
-                break;
-        }
-    }
-
-    private sealed class ReceiverMethodInfo(
-        INamedTypeSymbol containingType,
-        string methodName,
-        ImmutableArray<ReceiverInfo> receiverInfos)
-    {
-        public INamedTypeSymbol ContainingType { get; } = containingType;
-        public string MethodName { get; } = methodName;
-        public ImmutableArray<ReceiverInfo> ReceiverInfos { get; } = receiverInfos;
-    }
-
-    private sealed class ReceiverInfo(
-        string notifyClassName,
-        string notifyMemberName,
-        int method)
-    {
-        public string NotifyClassName { get; } = notifyClassName;
-        public string NotifyMemberName { get; } = notifyMemberName;
-        public int Method { get; } = method;
+        public string EventName { get; }
     }
 }

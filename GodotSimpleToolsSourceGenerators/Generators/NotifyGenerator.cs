@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -12,7 +12,7 @@ namespace GodotSimpleToolsSourceGenerators.Generators;
 [Generator(LanguageNames.CSharp)]
 public sealed class NotifyGenerator : IIncrementalGenerator
 {
-    private const string NotifyAttributeName = "GodotSimpleTools.Attributes.NotifyAttribute";
+    private const string NotifyAttributeName = "GodotSimpleTools.NotifyAttribute";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -212,18 +212,7 @@ public sealed class NotifyGenerator : IIncrementalGenerator
         INamedTypeSymbol classSymbol,
         IReadOnlyList<NotifyPropertyInfo> properties)
     {
-        builder.Append("    public const string Class_name = ")
-            .Append(ToStringLiteral(classSymbol.ToDisplayString()))
-            .AppendLine(";");
-
-        foreach (var property in properties)
-        {
-            builder.Append("    public const string ")
-                .Append(property.PropertyName)
-                .Append("_name = ")
-                .Append(ToStringLiteral(property.PropertyName))
-                .AppendLine(";");
-        }
+        // 不再生成任何常量，因为现在使用 nameof 来引用事件
     }
 
     private static string GetTypeDeclaration(INamedTypeSymbol classSymbol)

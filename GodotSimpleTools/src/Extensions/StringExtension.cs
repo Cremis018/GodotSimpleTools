@@ -1,6 +1,6 @@
 ﻿using Godot;
 
-namespace GodotSimpleTools.Extensions;
+namespace GodotSimpleTools;
 
 public static class StringExtension
 {

@@ -1,4 +1,4 @@
-﻿using GodotSimpleTools.Attributes;
+﻿using GodotSimpleTools;
 
 namespace GodotSimpleToolsTest;
 
@@ -9,7 +9,8 @@ public partial class NotifySample
     [Notify(HasChanging = true,DefaultValue = "Hello")] public string Name2 { get => GetName2(); set => SetName2(value); }
     [Notify(1)] public int Value1 { get => GetValue1(); set => SetValue1(value); }
     [Notify(true)] public bool IsMen { get => GetIsMen(); set => SetIsMen(value); }
-    public string ClassName { get; set; } = Class_name;
+    
+    public void Update(string _){}
 }
 
 // 生成器生成的

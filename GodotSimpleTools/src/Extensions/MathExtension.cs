@@ -1,4 +1,4 @@
-﻿namespace GodotSimpleTools.Extensions;
+﻿namespace GodotSimpleTools;
 
 public static class MathExtension
 {
@@ -264,5 +264,12 @@ public static class MathExtension
     /// <param name="value">处理值</param>
     /// <returns>限制值</returns>
     public static float Clamp01(this float value) => Math.Clamp(value, 0, 1);
+    
+    /// <summary>
+    /// 限制在0-1之间
+    /// </summary>
+    /// <param name="value">处理值</param>
+    /// <returns>限制值</returns>
+    public static double Clamp01(this double value) => Math.Clamp(value, 0, 1);
     #endregion
 }
