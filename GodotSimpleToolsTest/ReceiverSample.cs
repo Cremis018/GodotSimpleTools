@@ -11,17 +11,17 @@ public partial class ReceiverSample
     [Notify] public int MyValue { get => GetMyValue(); set => SetMyValue(value); }
     
     //用户在自动生成后可以补充的
-     // public ReceiverSample()
-     // {
-     //     InitNotifies();
-     // }
-     //
-     // public void Destroy()
-     // {
-     //     DestroyNotifies();
-     // }
+     public ReceiverSample()
+     {
+         InitNotifies();
+     }
+     
+     public void Destroy()
+     {
+         DestroyNotifies();
+     }
     
-    // [Receiver(nameof(_notifySample1.IsMenChanged))]
+    [Receiver(nameof(_notifySample1.IsMenChanged))]
     private void OnNotifySampleSexChanged(bool value)
     {
         

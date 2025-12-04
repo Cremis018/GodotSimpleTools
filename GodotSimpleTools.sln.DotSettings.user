@@ -7,4 +7,6 @@
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/SourceGeneratedFilesToSkip/=GodotSimpleToolsTest_005CGodotSimpleToolsSourceGenerators_005CGodotSimpleToolsSourceGenerators_002EGenerators_002ENotifyGenerator_005CNotifySample_005FNotifyGenerator_002Eg_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;&#xD;
   &lt;Assembly Path="C:\CsharpProjects\GodotSimpleTools\GodotSimpleToolsSourceGenerators\bin\Debug\netstandard2.0\GodotSimpleToolsSourceGenerators.dll" /&gt;&#xD;
-&lt;/AssemblyExplorer&gt;</s:String></wpf:ResourceDictionary>
+&lt;/AssemblyExplorer&gt;</s:String>
+	<s:String x:Key="/Default/Environment/Hierarchy/Build/BuildTool/CustomBuildToolPath/@EntryValue">C:\Program Files\dotnet\sdk\8.0.204\MSBuild.dll</s:String>
+	<s:Int64 x:Key="/Default/Environment/Hierarchy/Build/BuildTool/MsbuildVersion/@EntryValue">1114121</s:Int64></wpf:ResourceDictionary>
