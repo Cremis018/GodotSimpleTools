@@ -1,4 +1,4 @@
-namespace GodotSimpleTools.Attributes;
+namespace GodotSimpleTools;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 public sealed class ReceiverAttribute : Attribute

@@ -9,7 +9,7 @@
         <Company>Minktail</Company>
         <RepositoryUrl>https://github.com/Cremis018/GodotSimpleTools.git</RepositoryUrl>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Version>0.0.0.8</Version>
+        <Version>0.0.0.9</Version>
         <PackageIconUrl>res/icons/logo.png</PackageIconUrl>
     </PropertyGroup>
 

@@ -1,6 +1,5 @@
 using Godot.NativeInterop;
 using GodotSimpleTools;
-using GodotSimpleTools.Attributes;
 
 namespace GodotSimpleToolsTest;
 
