@@ -1,0 +1,14 @@
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+
+/.idea
+GodotSimpleTools/obj
+GodotSimpleToolsSourceGenerators/obj
+GodotSimpleTools/bin
+GodotSimpleToolsSourceGenerators/bin
+GodotSimpleTools/.idea
+GodotSimpleToolsSourceGenerators/.idea
+GodotSimpleToolsTest

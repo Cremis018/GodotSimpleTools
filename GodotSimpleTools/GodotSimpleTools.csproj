@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Authors>Cremis018</Authors>
+        <Description>一个简单的给Godot游戏开发中对基础类进行操作的常用工具和扩展</Description>
+        <Company>ARacconDog</Company>
+        <RepositoryUrl>https://github.com/Cremis018/GodotSimpleTools.git</RepositoryUrl>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Version>0.0.1-dev2</Version>
+        <PackageIconUrl>res/icons/logo.png</PackageIconUrl>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <OutputPath>C:\MyNuget\Debug</OutputPath>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <OutputPath>C:\MyNuget\Release</OutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\GodotSimpleToolsSourceGenerators\GodotSimpleToolsSourceGenerators.csproj"
+                          ReferenceOutputAssembly="false"
+                          OutputItemType="Analyzer" />
+
+        <None Include="../GodotSimpleToolsSourceGenerators/bin/$(Configuration)/netstandard2.0/GodotSimpleToolsSourceGenerators.dll">
+            <Link>Analyzers\GodotSimpleToolsSourceGenerators.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="GodotSharp" Version="4.0.0" />
+    </ItemGroup>
+</Project>
