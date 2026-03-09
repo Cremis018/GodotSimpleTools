@@ -9,8 +9,8 @@
         <Company>ARacconDog</Company>
         <RepositoryUrl>https://github.com/Cremis018/GodotSimpleTools.git</RepositoryUrl>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Version>0.0.1-dev2</Version>
-        <PackageIconUrl>res/icons/logo.png</PackageIconUrl>
+        <Version>0.0.1-dev3</Version>
+        <PackageIconUrl></PackageIconUrl>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

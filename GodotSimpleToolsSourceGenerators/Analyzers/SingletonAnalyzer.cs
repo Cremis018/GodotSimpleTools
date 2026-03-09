@@ -13,22 +13,19 @@ public class SingletonAnalyzer : DiagnosticAnalyzer
     public const string InvalidAutoLoadForNormalClassId = "GST006";
     public const string AutoLoadRecommendedForNodeId = "GST007";
     public const string ClassShouldBePartialId = "GST008";
-    
-    private static readonly string InvalidAutoLoadForNormalClassTitle = 
-        "非Node类不支持AutoLoad单例模式";
-    private static readonly string InvalidAutoLoadForNormalClassMessageFormat = 
-        "非Node类'{0}'使用了AutoLoad单例模式，将自动按Lazy模式处理";
-    
-    private static readonly string AutoLoadRecommendedForNodeTitle = 
-        "推荐Node类使用AutoLoad单例模式";
-    private static readonly string AutoLoadRecommendedForNodeMessageFormat = 
-        "Node类'{0}'使用{1}单例模式，建议使用AutoLoad模式以获得更好的性能";
-    
-    private static readonly string ClassShouldBePartialTitle = 
-        "Singleton类应该是partial类";
-    private static readonly string ClassShouldBePartialMessageFormat = 
-        "使用了[Singleton]特性的类'{0}'应该是partial类";
-    
+
+    private const string InvalidAutoLoadForNormalClassTitle = "非Node类不支持AutoLoad单例模式";
+
+    private const string InvalidAutoLoadForNormalClassMessageFormat = "非Node类'{0}'使用了AutoLoad单例模式，将自动按Lazy模式处理";
+
+    private const string AutoLoadRecommendedForNodeTitle = "推荐Node类使用AutoLoad单例模式";
+
+    private const string AutoLoadRecommendedForNodeMessageFormat = "Node类'{0}'使用{1}单例模式，建议使用AutoLoad模式以获得更好的性能";
+
+    private const string ClassShouldBePartialTitle = "Singleton类应该是partial类";
+
+    private const string ClassShouldBePartialMessageFormat = "使用了[Singleton]特性的类'{0}'应该是partial类";
+
     private const string Category = "Usage";
     
     private static readonly DiagnosticDescriptor InvalidAutoLoadForNormalClassRule = new DiagnosticDescriptor(
