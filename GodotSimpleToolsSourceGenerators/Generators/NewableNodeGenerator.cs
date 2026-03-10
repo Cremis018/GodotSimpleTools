@@ -133,6 +133,8 @@ public class NewableNodeGenerator : IIncrementalGenerator
         var baseType = classSymbol.BaseType;
         var baseTypeName = baseType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? "global::Godot.Node";
 
+        // sb.AppendLine($"using Godot;");
+        // sb.AppendLine();
         // 命名空间
         if (!classSymbol.ContainingNamespace.IsGlobalNamespace)
         {
@@ -159,38 +161,15 @@ public class NewableNodeGenerator : IIncrementalGenerator
         sb.AppendLine();
         sb.AppendLine("{");
 
-        // 生成静态实例字段
-        sb.AppendLine($"    internal static {className}? _New_instance;");
-        sb.AppendLine();
-
         // 生成New方法
         sb.AppendLine($"    public static {className} New(bool duplicate = true)");
         sb.AppendLine("    {");
-        sb.AppendLine($"        if (_New_instance != null) return _New_instance;");
         sb.AppendLine(
             $"        var node = global::Godot.ResourceLoader.Load<global::Godot.PackedScene>(\"{EscapeString(scenePath)}\").Instantiate();");
         sb.AppendLine($"        if (duplicate) node = node.Duplicate();");
-        sb.AppendLine($"        _New_instance ??= node as {className};");
-        sb.AppendLine("        return _New_instance!;");
+        sb.AppendLine($"        return node as {className};");
         sb.AppendLine("    }");
         sb.AppendLine();
-
-        // 生成重置方法
-        sb.AppendLine($"    public static void ResetNewable()");
-        sb.AppendLine("    {");
-        sb.AppendLine("        _New_instance = null;");
-        sb.AppendLine("    }");
-        sb.AppendLine();
-
-        // 生成是否存活的属性
-        sb.AppendLine($"    public static bool IsNewInstanceAlive");
-        sb.AppendLine("    {");
-        sb.AppendLine("        get");
-        sb.AppendLine("        {");
-        sb.AppendLine(
-            $"            return _New_instance != null && global::Godot.GodotObject.IsInstanceValid(_New_instance);");
-        sb.AppendLine("        }");
-        sb.AppendLine("    }");
 
         sb.AppendLine("}");
 

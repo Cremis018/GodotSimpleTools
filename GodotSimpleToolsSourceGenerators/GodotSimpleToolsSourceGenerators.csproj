@@ -9,7 +9,7 @@
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <IsRoslynComponent>true</IsRoslynComponent>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Version>0.0.1-dev3</Version>
+        <Version>0.0.1-dev3.1</Version>
         <Authors>Cremis018</Authors>
         <Description>GodotSimpleTools包必须的源码生成器和分析器</Description>
         <Company>ARacconDog</Company>
